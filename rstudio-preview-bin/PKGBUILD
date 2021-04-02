@@ -1,0 +1,67 @@
+# Maintainer Mike Carter
+# Adapted from PKGBUILD for rstudio-desktop-bin by Meow
+
+pkgname=rstudio-preview-bin
+pkgver=1.4.1114
+pkgrel=1
+pkgdesc="An integrated development environment (IDE) for R (binary from RStudio official repository)"
+arch=('x86_64')
+license=('GPL')
+url="http://www.rstudio.org/"
+depends=('r' 'hicolor-icon-theme' 'shared-mime-info' 'openssl' 'libxkbcommon-x11' 'libedit' 'postgresql-libs' 'sqlite')
+makedepends=()
+optdepends=('clang: C/C++ and Rcpp support')
+conflicts=('rstudio-desktop' 'rstudio-desktop-git' 'rstudio-desktop-preview-bin' 'rstudio-desktop-bin')
+provides=("rstudio-desktop=${pkgver}")
+options=(!strip)
+
+sha256sums_x86_64=('4b6cc06c0d21549f4f58faa2ce1e481c7b767f4255efa11c75f0c72ecc35ffe8')
+
+source_x86_64=("https://s3.amazonaws.com/rstudio-ide-build/desktop/bionic/amd64/rstudio-${pkgver}-amd64.deb")
+
+install="$pkgname".install
+
+package() {
+
+  shopt -s extglob
+
+  msg "Converting debian package..."
+
+  cd "$srcdir"
+  tar Jxpf data.tar.xz -C "$pkgdir"
+  install -dm755 "$pkgdir/usr/bin"
+
+  ARCH=${ARCH/x86_64/amd64}
+
+  cd "$pkgdir/usr/lib/rstudio/bin/pandoc"
+
+  find "$pkgdir/usr" -type d -print0 | xargs -0 chmod 755
+  find "$pkgdir/usr" -type f -name '*.so.*' -print0 | xargs -0 chmod 644
+
+  cd "$pkgdir/usr/lib/rstudio/lib"
+  ls libQt*.so.*| grep '\.[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}$'|
+  while read x;do
+    if [[ ! -e "${x%.+([0-9]).+([0-9])}" ]];then
+      ln -s "$x" "${x%.+([0-9]).+([0-9])}"
+    fi
+  done
+  ls lib*.so.* | grep '\.so\.[0-9]\{1,\}\.[0-9]\{1,\}$'|
+  while read x;do
+    if [[ ! -e "${x%.+([0-9])}" ]];then
+      ln -s "$x" "${x%.+([0-9])}"
+    fi
+  done
+
+  cd "$pkgdir/usr/bin"
+  echo '#!/bin/sh
+export QT_DIR=/usr/lib/rstudio
+export QT_PLUGIN_PATH=$QT_DIR/plugins
+export QT_QPA_PLATFORM_PLUGIN_PATH=$QT_PLUGIN_PATH/platforms
+export KDEDIRS=/usr
+exec /usr/lib/rstudio/bin/rstudio "$@"
+' > "$pkgdir/usr/bin/rstudio-bin"
+  chmod 755 "$pkgdir/usr/bin/rstudio-bin"
+
+  sed -i 's|/usr/lib/rstudio/bin/rstudio|/usr/bin/rstudio-bin|' "$pkgdir/usr/share/applications/rstudio.desktop"
+}
+# vim:ft=sh tabstop=2 expandtab
