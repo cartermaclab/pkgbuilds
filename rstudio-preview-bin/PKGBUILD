@@ -2,8 +2,8 @@
 # Adapted from PKGBUILD for rstudio-desktop-bin by Meow
 
 pkgname=rstudio-preview-bin
-pkgver=1.4.1722
-pkgrel=1
+pkgver=1.4.1725
+pkgrel=2
 pkgdesc="An integrated development environment (IDE) for R (binary from RStudio official repository)"
 arch=('x86_64')
 license=('GPL')
@@ -15,7 +15,7 @@ conflicts=('rstudio-desktop' 'rstudio-desktop-git' 'rstudio-desktop-preview-bin'
 provides=("rstudio-desktop=${pkgver}")
 options=(!strip)
 
-sha256sums_x86_64=('391cf8499648d720cc4a8aea9163e2d7bcc1765f246d60fcddb9f446d0fa0f8b')
+sha256sums_x86_64=('74addff0b7d326c6d9892575f18330bbaefa92b433325bd1614fe03de54235bb')
 
 source_x86_64=("https://s3.amazonaws.com/rstudio-ide-build/desktop/bionic/amd64/rstudio-${pkgver}-amd64.deb")
 
